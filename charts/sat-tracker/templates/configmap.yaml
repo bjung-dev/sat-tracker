@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "sat-tracker.fullname" . }}
+  labels:
+    {{- include "sat-tracker.labels" . | nindent 4 }}
+data:
+  OBSERVER_NAME: {{ .Values.observer.name | quote }}
+  OBSERVER_LAT: {{ .Values.observer.latitude | quote }}
+  OBSERVER_LON: {{ .Values.observer.longitude | quote }}
+  OBSERVER_ELEVATION_M: {{ .Values.observer.elevationM | quote }}
+  MIN_ELEVATION_DEG: {{ .Values.minElevationDeg | quote }}

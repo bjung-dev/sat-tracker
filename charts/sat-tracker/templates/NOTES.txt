@@ -1,0 +1,8 @@
+sat-tracker is deployed as release "{{ .Release.Name }}" in namespace "{{ .Release.Namespace }}".
+Observer: {{ .Values.observer.name }} ({{ .Values.replicaCount }} replicas)
+
+To open it in your browser, run:
+
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "sat-tracker.fullname" . }} 8080:{{ .Values.service.port }}
+
+then visit http://localhost:8080

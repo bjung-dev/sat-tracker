@@ -1,0 +1,34 @@
+# Default settings for the sat-tracker chart. Every value here can be
+# overridden at install time, either one at a time:
+#   helm install demo charts/sat-tracker --set replicaCount=3
+# or with a separate values file (best for several settings, and needed for
+# text containing commas, which --set treats as separators):
+#   helm install chantilly charts/sat-tracker -f charts/sat-tracker/values-chantilly.yaml
+
+replicaCount: 2
+
+image:
+  repository: sat-tracker
+  tag: dev
+  pullPolicy: IfNotPresent
+
+# Where passes are predicted for.
+observer:
+  name: "JMU, Harrisonburg VA"
+  latitude: 38.4351
+  longitude: -78.8698
+  elevationM: 400
+
+# Only count passes that climb at least this high above the horizon.
+minElevationDeg: 10
+
+service:
+  port: 80
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi

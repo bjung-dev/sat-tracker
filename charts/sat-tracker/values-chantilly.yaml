@@ -1,0 +1,10 @@
+# Overrides for a second copy of the app that predicts passes over
+# The Aerospace Corporation's Chantilly, VA office. Anything not listed
+# here keeps its value from values.yaml.
+replicaCount: 1
+
+observer:
+  name: "Chantilly, VA"
+  latitude: 38.8943
+  longitude: -77.4311
+  elevationM: 90

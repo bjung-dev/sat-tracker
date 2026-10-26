@@ -1,0 +1,9 @@
+# Basic information about this Helm chart (the "package").
+apiVersion: v2
+name: sat-tracker
+description: Satellite pass predictor API
+type: application
+# version = the chart's own version (bump when you change templates/values).
+# appVersion = the version of the app the chart deploys.
+version: 0.1.0
+appVersion: "0.1.0"
