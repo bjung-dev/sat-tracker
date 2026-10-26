@@ -1,0 +1,38 @@
+# Tells Argo CD: "Keep the sat-tracker Helm chart from this GitHub repo
+# deployed in the sat-tracker namespace, exactly as it appears on main."
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sat-tracker
+  namespace: argocd
+  # When this Application is deleted, also delete the app's Kubernetes objects.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  # WHERE the desired state lives: a folder in a Git repo, on a branch.
+  source:
+    repoURL: https://github.com/bjung-dev/sat-tracker.git
+    targetRevision: main
+    path: charts/sat-tracker
+    helm:
+      releaseName: sat-tracker
+      valueFiles:
+        - values.yaml
+
+  # WHERE to deploy it: this same cluster, in the sat-tracker namespace.
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sat-tracker
+
+  syncPolicy:
+    automated:
+      prune: true      # delete objects that were removed from Git
+      selfHeal: true   # undo manual changes made directly in the cluster
+    syncOptions:
+      - CreateNamespace=true
+    # Argo CD now owns the namespace too, including its security label.
+    managedNamespaceMetadata:
+      labels:
+        pod-security.kubernetes.io/enforce: restricted

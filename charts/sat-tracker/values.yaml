@@ -8,8 +8,10 @@
 replicaCount: 2
 
 image:
-  repository: sat-tracker
-  tag: dev
+  # Built and published by CI (.github/workflows/ci.yaml). The tag names the
+  # exact Git commit the image was built from, so we always know what's running.
+  repository: ghcr.io/bjung-dev/sat-tracker
+  tag: sha-2533678
   pullPolicy: IfNotPresent
 
 # Where passes are predicted for.

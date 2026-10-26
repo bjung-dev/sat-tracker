@@ -1,0 +1,15 @@
+# Settings for installing Argo CD itself into the local kind cluster:
+#   helm install argocd argo/argo-cd --version 10.11.6 -n argocd --create-namespace -f deploy/argocd/values.yaml
+
+# Single sign-on and notifications aren't needed locally; turning them off
+# saves memory on the laptop.
+dex:
+  enabled: false
+notifications:
+  enabled: false
+
+configs:
+  params:
+    # Serve the web UI over plain HTTP. Fine for a laptop reached through
+    # kubectl port-forward; a real cluster would use HTTPS.
+    server.insecure: true
