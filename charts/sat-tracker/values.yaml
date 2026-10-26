@@ -5,7 +5,7 @@
 # text containing commas, which --set treats as separators):
 #   helm install chantilly charts/sat-tracker -f charts/sat-tracker/values-chantilly.yaml
 
-replicaCount: 2
+replicaCount: 3
 
 image:
   # Built and published by CI (.github/workflows/ci.yaml). The tag names the
