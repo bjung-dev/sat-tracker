@@ -1,0 +1,8 @@
+# Files Docker should never copy into the image.
+.git
+.venv
+**/__pycache__
+.pytest_cache
+tests
+Dockerfile
+.dockerignore
