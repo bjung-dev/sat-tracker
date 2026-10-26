@@ -1,0 +1,86 @@
+# Continuous Integration: on every push and pull request, GitHub spins up a
+# fresh Linux machine and runs these jobs. Results show in the repo's
+# "Actions" tab and as a ✓ or ✗ next to each commit.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# If you push again before a run finishes, cancel the outdated run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least privilege: jobs can only read the code unless they ask for more.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          version: "0.13.5"
+          enable-cache: true
+      # --locked: fail if uv.lock is out of date, so CI tests exactly the
+      # library versions we'll ship.
+      - run: uv sync --locked
+      - run: uv run pytest -v
+
+  lint-chart:
+    name: Lint Helm chart
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: azure/setup-helm@v5
+      - run: helm lint charts/sat-tracker
+      - run: helm lint charts/sat-tracker -f charts/sat-tracker/values-chantilly.yaml
+
+  build:
+    name: Build and publish image
+    # Only build once the tests and chart checks have passed.
+    needs: [test, lint-chart]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write   # allowed to upload images to GitHub's registry
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+
+      # Pull requests only build (to prove the Dockerfile works); pushes to
+      # main also log in and publish.
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Work out the image tags: "sha-abc1234" (the exact commit) on every
+      # build, plus "latest" for builds of main.
+      - name: Generate image tags
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build (and push on main)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: ${{ github.event_name == 'push' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Reuse layers from previous runs to make builds faster.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
