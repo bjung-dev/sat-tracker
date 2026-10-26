@@ -1,0 +1,9 @@
+# A namespace groups everything belonging to this app.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sat-tracker
+  labels:
+    # Ask Kubernetes to reject any pod that isn't locked down securely
+    # (e.g. running as root). Our Deployment is written to pass this check.
+    pod-security.kubernetes.io/enforce: restricted

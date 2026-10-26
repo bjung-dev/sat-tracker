@@ -1,0 +1,73 @@
+# "Keep 2 healthy copies (pods) of sat-tracker running at all times."
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sat-tracker
+  namespace: sat-tracker
+  labels:
+    app: sat-tracker
+spec:
+  replicas: 2
+  # The Deployment manages every pod carrying this label.
+  selector:
+    matchLabels:
+      app: sat-tracker
+  # The pod template: what each copy looks like.
+  template:
+    metadata:
+      labels:
+        app: sat-tracker
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile:
+          type: RuntimeDefault   # block unusual, risky system calls
+      # Prefer putting the pods on different nodes, so one machine failing
+      # doesn't take down every copy of the app.
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: sat-tracker
+      containers:
+        - name: sat-tracker
+          image: sat-tracker:dev
+          imagePullPolicy: IfNotPresent   # use the image kind already has
+          ports:
+            - name: http
+              containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: sat-tracker-config
+          # Readiness: "is this pod ready for traffic?" Until it says yes,
+          # the Service sends it no requests.
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 5
+          # Liveness: "is this pod still alive?" If it fails 3 times in a
+          # row, Kubernetes kills the container and starts a fresh one.
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          # requests = what the pod is guaranteed; limits = the most it may use.
+          # 100m CPU = one tenth of a CPU core. Mi = mebibytes of memory.
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true   # the app can't modify its own files
+            capabilities:
+              drop: ["ALL"]

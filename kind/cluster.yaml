@@ -1,0 +1,10 @@
+# A local Kubernetes cluster for development, built by kind.
+# Create:  kind create cluster --config kind/cluster.yaml
+# Delete:  kind delete cluster --name sat-tracker
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: sat-tracker
+nodes:
+  - role: control-plane   # runs Kubernetes itself (the "brain")
+  - role: worker          # runs our app's pods
+  - role: worker          # a second worker, so pods can spread across machines
