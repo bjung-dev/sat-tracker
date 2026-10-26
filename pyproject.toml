@@ -1,0 +1,27 @@
+[project]
+name = "sat-tracker"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Bradley Jung", email = "305580405+bjung-dev@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.162.0",
+    "httpx>=0.28.1",
+    "skyfield>=1.55",
+    "uvicorn>=0.54.0",
+]
+
+[project.scripts]
+sat-tracker = "sat_tracker:main"
+
+[build-system]
+requires = ["uv_build>=0.13.5,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
